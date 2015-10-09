@@ -93,7 +93,7 @@ def oauthSheets():
 	storage = Storage(SITE_ROOT + '/data/sheets.dat')
 	credentials = storage.get()
 	if credentials is None or credentials.invalid:
-		credentials = SignedJwtAssertionCredentials(google_api_user, key, scope='https://spreadsheets.google.com/feeds',sub=google_user)
+		credentials = SignedJwtAssertionCredentials(google_api_user, key, scope='https://spreadsheets.google.com/feeds/',sub=google_user)
 		storage.put(credentials)
 	else:
 		credentials.refresh(http)
@@ -120,15 +120,18 @@ def publish(report,columns):
 	cols = worksheet.row_values(1)
 	number_of_columns = len(cols)
 
-    # Now that we have the coordinates let's set the range
-	cell_list = worksheet.range('A1:%s%s' % (string.uppercase[number_of_columns],number_of_rows))
+    # If the sheet is blank skip over the clear portion. A range error will occur if it is blank
+	if number_of_columns != 0 and number_of_rows != 0:
 
-    # Set each cell to ""
-	for cell in cell_list:
-		cell.value = ""
+        # Now that we have the coordinates let's set the range
+		cell_list = worksheet.range('A1:%s%s' % (string.uppercase[number_of_columns],number_of_rows))
 
-    # Update the cells all at once
-	worksheet.update_cells(cell_list)
+        # Set each cell to ""
+		for cell in cell_list:
+			cell.value = ""
+
+        # Update the cells all at once
+		worksheet.update_cells(cell_list)
 
     # Setup the Header row
     # Get the number of columns provided by the Advanced Search
